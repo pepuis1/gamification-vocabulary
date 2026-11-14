@@ -20,8 +20,8 @@
     @keyframes rise { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
     @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; } }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js" type="text/javascript"></script>
   <script src="https://cdn.tailwindcss.com/3.4.17" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js" type="text/javascript"></script>
   <script src="/_sdk/ea2423e0a01a756f.data_sdk.js" type="text/javascript" integrity="sha512-Sg0g23oG9zpxeVGJw6Q935Wt19sv7pbBtYnmz0dqpxqMmhlUFeBYJjrBQheq1xeE/u69m7uZ8NgZRq4P2+K57w=="></script>
   <script src="/_sdk/d9be832f00068e0b.editing_sdk.js" type="text/javascript" integrity="sha512-yqvHt4MzL0mCVmFaeHgBiGCOYxuulJuObgwVVFUiCzzw/SBQGJ5XNA+pjVE7dF3MwlbrCMCAsgsDr3YQqF2Y4w=="></script>
   <script src="/_sdk/a202d01287f70bbd.resizing_sdk.js" type="text/javascript" integrity="sha512-1HSymNrRbmVrPINeyKeKDVHS1r/3KBjQvJ/IjvgAGUrP4+gPCV6nzQEbyDs7SEReA7mlPuHyFKB9Zk2K9KmXhQ=="></script>
@@ -154,7 +154,7 @@
        </div>
        <div class="flex flex-wrap items-center gap-4">
         <button id="reflection-submit" data-template-id="reflection-submit" type="submit" class="canva-button rounded-xl bg-[#007f79] px-7 py-3 font-bold text-white shadow-md transition hover:bg-[#006760]" style="background: rgb(0, 127, 121); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Submit Reflection</button>
-        <p data-template-id="reflection-complete" class="hidden font-bold text-[#11694e]" role="status" style="color: rgb(17, 105, 78); font-weight: 700; font-style: normal; font-size: 16px;">Reflection complete!</p>
+        <p data-template-id="reflection-complete" class="hidden font-bold text-[#11694e]" role="status" style="color: rgb(17, 105, 78); font-weight: 700; font-style: normal; font-size: 16px;">You're reflection has been submitted</p>
        </div>
       </form>
      </section>
@@ -176,6 +176,7 @@
     let score = 0;
     let answered = 0;
     let sheetReady = false;
+    let reflectionSubmitted = false;
 
     const dataHandler = {
       onDataChanged() {
@@ -246,7 +247,7 @@
 
     reflectionForm.addEventListener('submit', async (event) => {
       event.preventDefault();
-      if (!reflectionForm.reportValidity() || !sheetReady) return;
+      if (!reflectionForm.reportValidity() || !sheetReady || reflectionSubmitted) return;
       reflectionSubmit.disabled = true;
       reflectionComplete.textContent = 'Saving your reflection…';
       reflectionComplete.classList.remove('hidden');
@@ -259,7 +260,8 @@
         submitted_at: new Date().toISOString()
       });
       if (result.isOk) {
-        reflectionComplete.textContent = `Reflection complete for ${studentName.value.trim()}!`;
+        reflectionSubmitted = true;
+        reflectionComplete.textContent = "You're reflection has been submitted";
       } else {
         reflectionComplete.textContent = 'We could not save your reflection. Please try again.';
         reflectionSubmit.disabled = false;
@@ -286,6 +288,7 @@
       reflection.classList.add('hidden');
       part2Locked.classList.add('hidden');
       reflectionForm.reset();
+      reflectionSubmitted = false;
       reflectionComplete.textContent = '';
       reflectionSubmit.disabled = false;
       reflectionComplete.classList.add('hidden');
