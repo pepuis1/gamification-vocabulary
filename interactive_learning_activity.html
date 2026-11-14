@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Interactive Learning Activity</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&amp;family=Fraunces:wght@600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    :root { --ink:#17324b; --muted:#52677a; --teal:#007f79; --line:#d8e5e9; }
+    * { box-sizing:border-box; }
+    body { margin:0; width:100%; font-family:'DM Sans',sans-serif; color:var(--ink); }
+    .app-shell { width:100%; min-height:100%; background:radial-gradient(circle at 90% 8%,#ffe4a8 0,transparent 29%),radial-gradient(circle at 5% 78%,#d4f2ed 0,transparent 34%),#f4f8f7; }
+    .display { font-family:'Fraunces',serif; }
+    .answer { border:2px solid var(--line); background:#fff; color:var(--ink); transition:transform .18s,border-color .18s,background .18s; text-align:left; }
+    .answer:not(:disabled):hover { transform:translateY(-2px); border-color:var(--teal); background:#f0faf8; }
+    .answer.selected.correct { border-color:#11815b; background:#e3f7ea; }
+    .answer.selected.incorrect { border-color:#cb5d4c; background:#fff0eb; }
+    .answer:disabled { cursor:default; }
+    button:focus-visible { outline:3px solid #ed9b30; outline-offset:3px; }
+    .reveal { animation:rise .35s ease both; }
+    @keyframes rise { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; } }
+  </style>
+  <script src="https://cdn.tailwindcss.com/3.4.17" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+  
+  
+  
+ </head>
+ <body data-template-id="__page-root" class="app-shell" style="background: rgb(244, 248, 247);">
+  <div class="w-full px-4 py-6 sm:px-8 sm:py-10">
+   <div class="mx-auto max-w-4xl">
+    <header data-template-id="hero-panel" class="canva-header relative overflow-hidden rounded-[2rem] bg-[#17324b] px-6 py-8 text-white shadow-xl sm:px-10 sm:py-10" style="background: rgb(23, 50, 75);">
+     <div class="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full border-[30px] border-[#2c6475] opacity-60" aria-hidden="true"></div>
+     <div class="pointer-events-none absolute bottom-[-45px] right-28 h-28 w-28 rotate-12 rounded-[2rem] bg-[#f9bc66] opacity-90" aria-hidden="true"></div>
+     <div class="relative max-w-2xl">
+      <p data-template-id="eyebrow" class="canva-text mb-3 inline-block rounded-full bg-[#d0f2e9] px-4 py-1 font-bold text-[#115c58]" style="background: rgb(208, 242, 233); color: rgb(17, 92, 88); font-weight: 700; font-style: normal; font-size: 13px;">LEARNING ACTIVITY</p>
+      <h1 data-template-id="activity-title" class="canva-text display leading-tight text-white" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 32px;">Spot the Game Element!</h1>
+      <p data-template-id="instructions" class="canva-text mt-4 max-w-xl leading-relaxed text-[#e2f0f2]" style="color: rgb(226, 240, 242); font-weight: 400; font-style: normal; font-size: 16px;">Read each scenario and select the gamification element being used. You'll get feedback after every answer.</p>
+     </div>
+    </header>
+    <main class="mt-6">
+     <section data-template-id="objective-panel" class="canva-panel mb-6 rounded-2xl border border-[#d8e5e9] bg-white px-5 py-4 shadow-sm sm:px-7" aria-label="Learning objective" style="background: rgb(255, 255, 255);">
+      <h2 data-template-id="objective-heading" class="canva-text font-bold" style="color: rgb(23, 50, 75); font-weight: 700; font-style: normal; font-size: 24px;">Your learning objective</h2>
+      <p data-template-id="objective-text" class="canva-text mt-1 leading-relaxed" style="color: rgb(82, 103, 122); font-weight: 400; font-style: normal; font-size: 16px;">Identify at least three game elements and describe how each can support learning.</p>
+     </section>
+     <section id="activity" aria-label="Quiz activity">
+      <div data-template-id="status-panel" class="canva-panel mb-5 rounded-2xl bg-[#e3f5f0] px-5 py-4 sm:px-7" style="background: rgb(227, 245, 240);">
+       <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p class="font-bold"><span data-template-id="progress-label" class="canva-text" style="color: rgb(23, 50, 75); font-weight: 700; font-style: normal; font-size: 16px;">Question</span> <span id="question-count">1 of 5</span></p>
+        <p class="font-bold"><span data-template-id="score-label" class="canva-text" style="color: rgb(23, 50, 75); font-weight: 700; font-style: normal; font-size: 16px;">Score</span> <span id="score-count" aria-live="polite">0 / 5</span></p>
+       </div>
+       <div id="progress-track" role="progressbar" aria-label="Questions answered" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0" class="h-3 overflow-hidden rounded-full bg-white">
+        <div id="progress-fill" class="h-full w-0 rounded-full bg-[#007f79] transition-all duration-500"></div>
+       </div>
+      </div>
+      <div id="questions">
+       <section class="question reveal" data-answer="0" aria-labelledby="q1-title">
+        <div data-template-id="question-card-1" class="canva-card rounded-[2rem] border border-[#d8e5e9] bg-white p-6 shadow-[0_14px_40px_rgba(23,50,75,.08)] sm:p-9" style="background: rgb(255, 255, 255);"><span data-template-id="q1-tag" class="canva-tag inline-block rounded-full bg-[#fff0d3] px-3 py-1 font-bold text-[#765018]" style="background: rgb(255, 240, 211); color: rgb(118, 80, 24); font-weight: 700; font-style: normal; font-size: 13px;">01 / EARN</span>
+         <h2 id="q1-title" data-template-id="q1-scenario" class="canva-text display mt-5 leading-snug" style="color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 24px;">Students earn 10 XP points after completing a learning activity.</h2>
+         <p data-template-id="answer-prompt" class="canva-text mb-4 mt-5 font-semibold" style="color: rgb(82, 103, 122); font-weight: 600; font-style: normal; font-size: 16px;">Which game element is this?</p>
+         <div class="grid gap-3 sm:grid-cols-2"><button type="button" data-template-id="q1-a1" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="0" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Points</button> <button type="button" data-template-id="q1-a2" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="1" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Progress Indicator</button> <button type="button" data-template-id="q1-a3" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="2" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Choice</button> <button type="button" data-template-id="q1-a4" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="3" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Feedback</button> <button type="button" data-template-id="q1-a5" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="4" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Challenge</button>
+         </div>
+         <div class="feedback hidden mt-6 rounded-xl bg-[#f0f8f6] p-5" role="status">
+          <p class="correct-message hidden font-bold text-[#11694e]" data-template-id="correct-label" style="color: rgb(17, 105, 78); font-weight: 700; font-style: normal; font-size: 16px;">That's right!</p>
+          <p class="incorrect-message hidden font-bold text-[#a84637]" data-template-id="incorrect-label" style="color: rgb(168, 70, 55); font-weight: 700; font-style: normal; font-size: 16px;">Not quite — here's why:</p>
+          <p data-template-id="q1-explanation" class="canva-text mt-2 leading-relaxed" style="color: rgb(23, 50, 75); font-weight: 400; font-style: normal; font-size: 16px;">Points reward a completed action. Earning XP recognizes effort and can motivate students to keep participating.</p>
+         </div>
+        </div>
+       </section>
+       <section class="question hidden" data-answer="1" aria-labelledby="q2-title">
+        <div data-template-id="question-card-2" class="canva-card rounded-[2rem] border border-[#d8e5e9] bg-white p-6 shadow-[0_14px_40px_rgba(23,50,75,.08)] sm:p-9" style="background: rgb(255, 255, 255);"><span data-template-id="q2-tag" class="canva-tag inline-block rounded-full bg-[#fff0d3] px-3 py-1 font-bold text-[#765018]" style="background: rgb(255, 240, 211); color: rgb(118, 80, 24); font-weight: 700; font-style: normal; font-size: 13px;">02 / TRACK</span>
+         <h2 id="q2-title" data-template-id="q2-scenario" class="canva-text display mt-5 leading-snug" style="color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 24px;">Students can see that they have completed 75% of their online course.</h2>
+         <p data-template-id="q2-prompt" class="canva-text mb-4 mt-5 font-semibold" style="color: rgb(82, 103, 122); font-weight: 600; font-style: normal; font-size: 16px;">Which game element is this?</p>
+         <div class="grid gap-3 sm:grid-cols-2"><button type="button" data-template-id="q2-a1" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="0" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Points</button> <button type="button" data-template-id="q2-a2" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="1" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Progress Indicator</button> <button type="button" data-template-id="q2-a3" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="2" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Choice</button> <button type="button" data-template-id="q2-a4" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="3" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Feedback</button> <button type="button" data-template-id="q2-a5" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="4" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Challenge</button>
+         </div>
+         <div class="feedback hidden mt-6 rounded-xl bg-[#f0f8f6] p-5" role="status">
+          <p class="correct-message hidden font-bold text-[#11694e]" data-template-id="q2-correct-label" style="color: rgb(17, 105, 78); font-weight: 700; font-style: normal; font-size: 16px;">That's right!</p>
+          <p class="incorrect-message hidden font-bold text-[#a84637]" data-template-id="q2-incorrect-label" style="color: rgb(168, 70, 55); font-weight: 700; font-style: normal; font-size: 16px;">Not quite — here's why:</p>
+          <p data-template-id="q2-explanation" class="canva-text mt-2 leading-relaxed" style="color: rgb(23, 50, 75); font-weight: 400; font-style: normal; font-size: 16px;">A progress indicator shows how much of a course is complete. Seeing 75% helps students track their progress toward a goal.</p>
+         </div>
+        </div>
+       </section>
+       <section class="question hidden" data-answer="2" aria-labelledby="q3-title">
+        <div data-template-id="question-card-3" class="canva-card rounded-[2rem] border border-[#d8e5e9] bg-white p-6 shadow-[0_14px_40px_rgba(23,50,75,.08)] sm:p-9" style="background: rgb(255, 255, 255);"><span data-template-id="q3-tag" class="canva-tag inline-block rounded-full bg-[#fff0d3] px-3 py-1 font-bold text-[#765018]" style="background: rgb(255, 240, 211); color: rgb(118, 80, 24); font-weight: 700; font-style: normal; font-size: 13px;">03 / DECIDE</span>
+         <h2 id="q3-title" data-template-id="q3-scenario" class="canva-text display mt-5 leading-snug" style="color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 24px;">Students can choose between creating a video or an infographic to demonstrate their understanding.</h2>
+         <p data-template-id="q3-prompt" class="canva-text mb-4 mt-5 font-semibold" style="color: rgb(82, 103, 122); font-weight: 600; font-style: normal; font-size: 16px;">Which game element is this?</p>
+         <div class="grid gap-3 sm:grid-cols-2"><button type="button" data-template-id="q3-a1" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="0" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Points</button> <button type="button" data-template-id="q3-a2" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="1" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Progress Indicator</button> <button type="button" data-template-id="q3-a3" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="2" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Choice</button> <button type="button" data-template-id="q3-a4" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="3" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Feedback</button> <button type="button" data-template-id="q3-a5" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="4" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Challenge</button>
+         </div>
+         <div class="feedback hidden mt-6 rounded-xl bg-[#f0f8f6] p-5" role="status">
+          <p class="correct-message hidden font-bold text-[#11694e]" data-template-id="q3-correct-label" style="color: rgb(17, 105, 78); font-weight: 700; font-style: normal; font-size: 16px;">That's right!</p>
+          <p class="incorrect-message hidden font-bold text-[#a84637]" data-template-id="q3-incorrect-label" style="color: rgb(168, 70, 55); font-weight: 700; font-style: normal; font-size: 16px;">Not quite — here's why:</p>
+          <p data-template-id="q3-explanation" class="canva-text mt-2 leading-relaxed" style="color: rgb(23, 50, 75); font-weight: 400; font-style: normal; font-size: 16px;">Choice lets students select how to show what they know. Picking a video or infographic gives them ownership of their learning.</p>
+         </div>
+        </div>
+       </section>
+       <section class="question hidden" data-answer="3" aria-labelledby="q4-title">
+        <div data-template-id="question-card-4" class="canva-card rounded-[2rem] border border-[#d8e5e9] bg-white p-6 shadow-[0_14px_40px_rgba(23,50,75,.08)] sm:p-9" style="background: rgb(255, 255, 255);"><span data-template-id="q4-tag" class="canva-tag inline-block rounded-full bg-[#fff0d3] px-3 py-1 font-bold text-[#765018]" style="background: rgb(255, 240, 211); color: rgb(118, 80, 24); font-weight: 700; font-style: normal; font-size: 13px;">04 / LEARN</span>
+         <h2 id="q4-title" data-template-id="q4-scenario" class="canva-text display mt-5 leading-snug" style="color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 24px;">Students immediately see an explanation of why their answer was incorrect.</h2>
+         <p data-template-id="q4-prompt" class="canva-text mb-4 mt-5 font-semibold" style="color: rgb(82, 103, 122); font-weight: 600; font-style: normal; font-size: 16px;">Which game element is this?</p>
+         <div class="grid gap-3 sm:grid-cols-2"><button type="button" data-template-id="q4-a1" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="0" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Points</button> <button type="button" data-template-id="q4-a2" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="1" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Progress Indicator</button> <button type="button" data-template-id="q4-a3" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="2" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Choice</button> <button type="button" data-template-id="q4-a4" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="3" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Feedback</button> <button type="button" data-template-id="q4-a5" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="4" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Challenge</button>
+         </div>
+         <div class="feedback hidden mt-6 rounded-xl bg-[#f0f8f6] p-5" role="status">
+          <p class="correct-message hidden font-bold text-[#11694e]" data-template-id="q4-correct-label" style="color: rgb(17, 105, 78); font-weight: 700; font-style: normal; font-size: 16px;">That's right!</p>
+          <p class="incorrect-message hidden font-bold text-[#a84637]" data-template-id="q4-incorrect-label" style="color: rgb(168, 70, 55); font-weight: 700; font-style: normal; font-size: 16px;">Not quite — here's why:</p>
+          <p data-template-id="q4-explanation" class="canva-text mt-2 leading-relaxed" style="color: rgb(23, 50, 75); font-weight: 400; font-style: normal; font-size: 16px;">Feedback explains the result of an action. An immediate explanation helps students understand and correct a mistake.</p>
+         </div>
+        </div>
+       </section>
+       <section class="question hidden" data-answer="4" aria-labelledby="q5-title">
+        <div data-template-id="question-card-5" class="canva-card rounded-[2rem] border border-[#d8e5e9] bg-white p-6 shadow-[0_14px_40px_rgba(23,50,75,.08)] sm:p-9" style="background: rgb(255, 255, 255);"><span data-template-id="q5-tag" class="canva-tag inline-block rounded-full bg-[#fff0d3] px-3 py-1 font-bold text-[#765018]" style="background: rgb(255, 240, 211); color: rgb(118, 80, 24); font-weight: 700; font-style: normal; font-size: 13px;">05 / GROW</span>
+         <h2 id="q5-title" data-template-id="q5-scenario" class="canva-text display mt-5 leading-snug" style="color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 24px;">Students complete increasingly difficult learning activities as they advance.</h2>
+         <p data-template-id="q5-prompt" class="canva-text mb-4 mt-5 font-semibold" style="color: rgb(82, 103, 122); font-weight: 600; font-style: normal; font-size: 16px;">Which game element is this?</p>
+         <div class="grid gap-3 sm:grid-cols-2"><button type="button" data-template-id="q5-a1" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="0" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Points</button> <button type="button" data-template-id="q5-a2" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="1" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Progress Indicator</button> <button type="button" data-template-id="q5-a3" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="2" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Choice</button> <button type="button" data-template-id="q5-a4" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="3" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Feedback</button> <button type="button" data-template-id="q5-a5" class="canva-button answer rounded-xl px-5 py-4 font-semibold" data-choice="4" style="background: rgb(255, 255, 255); color: rgb(23, 50, 75); font-weight: 600; font-style: normal; font-size: 16px;">Challenge</button>
+         </div>
+         <div class="feedback hidden mt-6 rounded-xl bg-[#f0f8f6] p-5" role="status">
+          <p class="correct-message hidden font-bold text-[#11694e]" data-template-id="q5-correct-label" style="color: rgb(17, 105, 78); font-weight: 700; font-style: normal; font-size: 16px;">That's right!</p>
+          <p class="incorrect-message hidden font-bold text-[#a84637]" data-template-id="q5-incorrect-label" style="color: rgb(168, 70, 55); font-weight: 700; font-style: normal; font-size: 16px;">Not quite — here's why:</p>
+          <p data-template-id="q5-explanation" class="canva-text mt-2 leading-relaxed" style="color: rgb(23, 50, 75); font-weight: 400; font-style: normal; font-size: 16px;">Challenge asks students to tackle tasks that grow in difficulty. This helps them build skills as they advance.</p>
+         </div>
+        </div>
+       </section>
+      </div>
+      <div class="mt-5 flex justify-end"><button id="next-button" data-template-id="next-button" type="button" disabled="" class="canva-button rounded-xl bg-[#007f79] px-7 py-3 font-bold text-white shadow-md transition enabled:hover:bg-[#006760] disabled:cursor-not-allowed disabled:opacity-45" style="background: rgb(0, 127, 121); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Next Question →</button> <button id="results-button" data-template-id="results-button" type="button" disabled="" class="canva-button hidden rounded-xl bg-[#007f79] px-7 py-3 font-bold text-white shadow-md transition enabled:hover:bg-[#006760] disabled:cursor-not-allowed disabled:opacity-45" style="background: rgb(0, 127, 121); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">See Results →</button>
+      </div>
+     </section>
+     <section id="results" data-template-id="results-panel" class="canva-panel hidden rounded-[2rem] border border-[#d8e5e9] bg-white p-8 text-center shadow-xl sm:p-12" aria-labelledby="results-title" style="background: rgb(255, 255, 255);">
+      <div class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#fff0d3] text-4xl" aria-hidden="true">
+       ★
+      </div>
+      <h2 id="results-title" data-template-id="results-title" class="canva-text display" style="color: rgb(23, 50, 75); font-weight: 700; font-style: normal; font-size: 24px;">Activity complete!</h2>
+      <p data-template-id="results-intro" class="canva-text mt-3" style="color: rgb(82, 103, 122); font-weight: 400; font-style: normal; font-size: 16px;">Your score</p>
+      <p id="final-score" class="my-5 text-5xl font-extrabold text-[#007f79]" aria-live="polite">0 / 5</p>
+      <p data-template-id="results-reflection" class="canva-text mx-auto mb-7 max-w-md leading-relaxed" style="color: rgb(82, 103, 122); font-weight: 400; font-style: normal; font-size: 16px;">Think back over the explanations: how could three of these elements help someone learn?</p>
+      <p id="part2-locked" data-template-id="part2-locked" class="canva-text mx-auto mb-7 hidden max-w-md rounded-xl bg-[#fff0eb] p-4 font-bold text-[#a84637]" role="status" style="color: rgb(168, 70, 55); font-weight: 700; font-style: normal; font-size: 16px;">Part 2 unlocks only with a perfect 5 / 5. Select Try Again to restart Part 1 and answer every question correctly.</p><button id="retry-button" data-template-id="retry-button" type="button" class="canva-button rounded-xl bg-[#007f79] px-8 py-3 font-bold text-white transition hover:bg-[#006760]" style="background: rgb(0, 127, 121); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Try Again</button>
+     </section>
+     <section id="reflection" data-template-id="reflection-panel" class="canva-panel hidden mt-6 rounded-[2rem] border border-[#d8e5e9] bg-white p-6 shadow-xl sm:p-9" aria-labelledby="reflection-title" style="background: rgb(255, 255, 255);">
+      <div class="mb-7 max-w-3xl">
+       <p data-template-id="reflection-kicker" class="canva-text mb-2 font-bold uppercase tracking-[0.14em] text-[#007f79]" style="color: rgb(0, 127, 121); font-weight: 700; font-style: normal; font-size: 13px;">PART 2 · WRITE</p>
+       <h2 id="reflection-title" data-template-id="reflection-title" class="canva-text display leading-tight" style="color: rgb(23, 50, 75); font-weight: 700; font-style: normal; font-size: 28px;">Part 2: Explain How Game Elements Support Learning</h2>
+       <p data-template-id="reflection-instructions" class="canva-text mt-3 leading-relaxed" style="color: rgb(82, 103, 122); font-weight: 400; font-style: normal; font-size: 16px;">Name one game element in each space and explain in writing how it can support learning. Complete all three responses, then submit your reflection.</p>
+      </div>
+      <form id="reflection-form" class="space-y-5">
+       <div class="rounded-2xl border border-[#d8e5e9] bg-[#f7fbfa] p-5">
+        <label data-template-id="reflection-label-1" for="reflection-1" class="canva-text mb-2 block font-bold" style="color: rgb(23, 50, 75); font-weight: 700; font-style: normal; font-size: 16px;">Game element 1: Name it and explain how it can support learning.</label> <textarea id="reflection-1" rows="4" class="w-full resize-y rounded-xl border-2 border-[#d8e5e9] bg-white p-4 text-[#17324b] outline-none transition focus:border-[#007f79]" required=""></textarea>
+       </div>
+       <div class="rounded-2xl border border-[#d8e5e9] bg-[#f7fbfa] p-5">
+        <label data-template-id="reflection-label-2" for="reflection-2" class="canva-text mb-2 block font-bold" style="color: rgb(23, 50, 75); font-weight: 700; font-style: normal; font-size: 16px;">Game element 2: Name it and explain how it can support learning.</label> <textarea id="reflection-2" rows="4" class="w-full resize-y rounded-xl border-2 border-[#d8e5e9] bg-white p-4 text-[#17324b] outline-none transition focus:border-[#007f79]" required=""></textarea>
+       </div>
+       <div class="rounded-2xl border border-[#d8e5e9] bg-[#f7fbfa] p-5">
+        <label data-template-id="reflection-label-3" for="reflection-3" class="canva-text mb-2 block font-bold" style="color: rgb(23, 50, 75); font-weight: 700; font-style: normal; font-size: 16px;">Game element 3: Name it and explain how it can support learning.</label> <textarea id="reflection-3" rows="4" class="w-full resize-y rounded-xl border-2 border-[#d8e5e9] bg-white p-4 text-[#17324b] outline-none transition focus:border-[#007f79]" required=""></textarea>
+       </div>
+       <div class="flex flex-wrap items-center gap-4">
+        <button id="reflection-submit" data-template-id="reflection-submit" type="submit" class="canva-button rounded-xl bg-[#007f79] px-7 py-3 font-bold text-white shadow-md transition hover:bg-[#006760]" style="background: rgb(0, 127, 121); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Submit Reflection</button>
+        <p data-template-id="reflection-complete" class="hidden font-bold text-[#11694e]" role="status" style="color: rgb(17, 105, 78); font-weight: 700; font-style: normal; font-size: 16px;">Reflection complete!</p>
+       </div>
+      </form>
+     </section>
+    </main>
+   </div>
+  </div>
+  <script>
+    const questions = [...document.querySelectorAll('.question')];
+    const nextButton = document.getElementById('next-button');
+    const resultsButton = document.getElementById('results-button');
+    const progressTrack = document.getElementById('progress-track');
+    const reflection = document.getElementById('reflection');
+    const reflectionForm = document.getElementById('reflection-form');
+    const reflectionSubmit = document.getElementById('reflection-submit');
+    const reflectionComplete = document.querySelector('[data-template-id="reflection-complete"]');
+    const part2Locked = document.getElementById('part2-locked');
+    let current = 0;
+    let score = 0;
+    let answered = 0;
+
+    function updateStatus() {
+      document.getElementById('question-count').textContent = `${Math.min(current + 1, 5)} of 5`;
+      document.getElementById('score-count').textContent = `${score} / 5`;
+      document.getElementById('progress-fill').style.width = `${answered * 20}%`;
+      progressTrack.setAttribute('aria-valuenow', String(answered));
+    }
+
+    questions.forEach((question, index) => {
+      question.querySelectorAll('.answer').forEach(button => {
+        button.addEventListener('click', () => {
+          if (index !== current || question.dataset.answered === 'true') return;
+          const correct = Number(button.dataset.choice) === Number(question.dataset.answer);
+          question.dataset.answered = 'true';
+          answered++;
+          if (correct) score++;
+          button.classList.add('selected', correct ? 'correct' : 'incorrect');
+          question.querySelectorAll('.answer').forEach(option => { option.disabled = true; });
+          question.querySelector('.feedback').classList.remove('hidden');
+          question.querySelector(correct ? '.correct-message' : '.incorrect-message').classList.remove('hidden');
+          (current === 4 ? resultsButton : nextButton).disabled = false;
+          updateStatus();
+        });
+      });
+    });
+
+    nextButton.addEventListener('click', () => {
+      if (current >= 4 || questions[current].dataset.answered !== 'true') return;
+      questions[current].classList.add('hidden');
+      current++;
+      questions[current].classList.remove('hidden');
+      questions[current].classList.add('reveal');
+      nextButton.disabled = true;
+      if (current === 4) {
+        nextButton.classList.add('hidden');
+        resultsButton.classList.remove('hidden');
+      }
+      updateStatus();
+      questions[current].querySelector('h2').focus({preventScroll:true});
+    });
+
+    resultsButton.addEventListener('click', () => {
+      if (questions[4].dataset.answered !== 'true') return;
+      document.getElementById('activity').classList.add('hidden');
+      document.getElementById('results').classList.remove('hidden');
+      document.getElementById('final-score').textContent = `${score} / 5`;
+      const perfectScore = score === 5 && answered === 5;
+      reflection.classList.toggle('hidden', !perfectScore);
+      part2Locked.classList.toggle('hidden', perfectScore);
+      if (perfectScore) reflection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('results-title').focus({preventScroll:true});
+    });
+
+    reflectionForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (!reflectionForm.reportValidity()) return;
+      reflectionSubmit.disabled = true;
+      reflectionComplete.classList.remove('hidden');
+    });
+
+    document.getElementById('retry-button').addEventListener('click', () => {
+      current = 0; score = 0; answered = 0;
+      questions.forEach((question, index) => {
+        delete question.dataset.answered;
+        question.classList.toggle('hidden', index !== 0);
+        question.querySelector('.feedback').classList.add('hidden');
+        question.querySelectorAll('.correct-message, .incorrect-message').forEach(message => message.classList.add('hidden'));
+        question.querySelectorAll('.answer').forEach(button => {
+          button.disabled = false;
+          button.classList.remove('selected', 'correct', 'incorrect');
+        });
+      });
+      nextButton.disabled = true;
+      nextButton.classList.remove('hidden');
+      resultsButton.disabled = true;
+      resultsButton.classList.add('hidden');
+      document.getElementById('results').classList.add('hidden');
+      reflection.classList.add('hidden');
+      part2Locked.classList.add('hidden');
+      reflectionForm.reset();
+      reflectionSubmit.disabled = false;
+      reflectionComplete.classList.add('hidden');
+      document.getElementById('activity').classList.remove('hidden');
+      updateStatus();
+      questions[0].querySelector('h2').focus({preventScroll:true});
+    });
+
+    document.querySelectorAll('.question h2, #results-title').forEach(heading => heading.tabIndex = -1);
+    updateStatus();
+  </script>
+ 
+</body></html>
