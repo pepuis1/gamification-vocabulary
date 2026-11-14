@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gamification Vocabulary Challenge</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; background: #f4f6fb; color: #243047; margin: 0; padding: 20px; }
+  .game { max-width: 900px; margin: auto; background: white; padding: 28px; border-radius: 18px; box-shadow: 0 4px 18px rgba(0,0,0,.08); }
+  h1 { text-align: center; color: #394b80; margin-top: 0; }
+  .instructions { text-align: center; line-height: 1.5; margin-bottom: 24px; }
+  .score-area { margin-bottom: 24px; }
+  .score { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; }
+  .progress-track { height: 14px; background: #e4e8f1; border-radius: 20px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; background: #5a9b79; transition: width .3s; }
+  h2 { color: #394b80; font-size: 20px; }
+  .terms { display: flex; flex-wrap: wrap; gap: 12px; margin: 15px 0 28px; }
+  .term { background: #e8edff; color: #293b75; border: 2px solid #b9c6f3; border-radius: 10px; padding: 13px 18px; font-weight: bold; cursor: grab; user-select: none; }
+  .term.selected { outline: 3px solid #e5a93d; background: #fff3d6; }
+  .term.matched { opacity: .45; cursor: default; text-decoration: line-through; }
+  .definition { display: flex; align-items: center; gap: 14px; border: 2px dashed #cbd2df; border-radius: 12px; padding: 14px; margin-bottom: 12px; background: #fafbfe; cursor: pointer; min-height: 75px; }
+  .definition:hover, .definition.over { border-color: #7188d4; background: #f0f3ff; }
+  .definition.correct { border: 2px solid #65a984; background: #effaf3; cursor: default; }
+  .definition-text { flex: 1; line-height: 1.45; }
+  .drop-label { min-width: 125px; text-align: center; font-weight: bold; color: #52628a; background: #edf0f7; padding: 9px; border-radius: 8px; }
+  .correct .drop-label { background: #d9f0e1; color: #286443; }
+  .feedback { min-height: 65px; padding: 15px; margin-top: 20px; border-radius: 10px; background: #f0f3f8; line-height: 1.5; }
+  .feedback.good { background: #e8f6ed; color: #245c3a; }
+  .feedback.bad { background: #fff0ed; color: #963d30; }
+  button { display: block; margin: 22px auto 0; padding: 12px 25px; border: none; border-radius: 9px; background: #394b80; color: white; font-size: 16px; font-weight: bold; cursor: pointer; }
+  button:hover { background: #293966; }
+  @media (max-width: 600px) { .game { padding: 18px; } .definition { flex-direction: column; align-items: stretch; } .drop-label { min-width: 0; } }
+</style>
+</head>
+<body>
+<div class="game">
+  <h1>🎮 Gamification Vocabulary Challenge</h1>
+  <p class="instructions">Match each vocabulary word with its correct definition. Drag a word into a definition box, or tap a word and then tap a definition.</p>
+  <div class="score-area">
+    <div class="score"><span id="score">Score: 0 / 4</span><span id="progressText">0% Complete</span></div>
+    <div class="progress-track"><div class="progress-fill" id="progress"></div></div>
+  </div>
+  <h2>Step 1: Choose a vocabulary word</h2>
+  <div class="terms" id="terms"></div>
+  <h2>Step 2: Match it to the correct definition</h2>
+  <div id="definitions"></div>
+  <div class="feedback" id="feedback" aria-live="polite">Select a vocabulary word and match it with a definition!</div>
+  <button type="button" onclick="resetGame()">Start Over</button>
+</div>
+<script>
+const vocabulary = [
+  { word: "Feedback", definition: "Information about performance that helps learners understand what they did well and what they can improve.", explanation: "Feedback gives learners information about their performance. It helps them recognize what they did well and what they can improve." },
+  { word: "Challenge", definition: "A task or goal that encourages learners to use their skills and effort.", explanation: "A challenge encourages learners to try, use their skills, and put effort into reaching a goal." },
+  { word: "Choice", definition: "The ability to select between different activities, options, or ways to complete a task.", explanation: "Choice gives learners the opportunity to select an activity, an option, or a way to complete a task." },
+  { word: "Progress Bar", definition: "A visual indicator showing how much of a task or goal has been completed.", explanation: "A progress bar visually shows how much of a task or goal has been completed and how much is left." }
+];
+let selectedWord = null;
+let matched = new Set();
+const termsContainer = document.getElementById("terms");
+const definitionsContainer = document.getElementById("definitions");
+const feedback = document.getElementById("feedback");
+function shuffle(array) { return [...array].sort(() => Math.random() - 0.5); }
+function buildGame() {
+  termsContainer.innerHTML = "";
+  definitionsContainer.innerHTML = "";
+  selectedWord = null;
+  matched.clear();
+  shuffle(vocabulary).forEach(item => {
+    const card = document.createElement("div");
+    card.className = "term";
+    card.textContent = item.word;
+    card.draggable = true;
+    card.dataset.word = item.word;
+    card.tabIndex = 0;
+    card.setAttribute("role", "button");
+    card.setAttribute("aria-label", "Select " + item.word);
+    card.addEventListener("click", () => selectWord(item.word));
+    card.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") { event.preventDefault(); selectWord(item.word); }
+    });
+    card.addEventListener("dragstart", event => event.dataTransfer.setData("text/plain", item.word));
+    termsContainer.appendChild(card);
+  });
+  shuffle(vocabulary).forEach(item => {
+    const box = document.createElement("div");
+    box.className = "definition";
+    box.dataset.answer = item.word;
+    const text = document.createElement("div");
+    text.className = "definition-text";
+    text.textContent = item.definition;
+    const label = document.createElement("div");
+    label.className = "drop-label";
+    label.textContent = "Drop word here";
+    box.appendChild(text);
+    box.appendChild(label);
+    box.addEventListener("click", () => { if (selectedWord) checkAnswer(selectedWord, item.word); });
+    box.addEventListener("dragover", event => {
+      if (!matched.has(item.word)) { event.preventDefault(); box.classList.add("over"); }
+    });
+    box.addEventListener("dragleave", () => box.classList.remove("over"));
+    box.addEventListener("drop", event => {
+      event.preventDefault();
+      box.classList.remove("over");
+      checkAnswer(event.dataTransfer.getData("text/plain"), item.word);
+    });
+    definitionsContainer.appendChild(box);
+  });
+  updateScore();
+  feedback.className = "feedback";
+  feedback.textContent = "Select a vocabulary word and match it with a definition!";
+}
+function selectWord(word) {
+  if (matched.has(word)) return;
+  selectedWord = word;
+  document.querySelectorAll(".term").forEach(card => card.classList.toggle("selected", card.dataset.word === word));
+  feedback.className = "feedback";
+  feedback.textContent = "You selected " + word + ". Now choose its definition.";
+}
+function checkAnswer(selected, answer) {
+  if (!selected || matched.has(answer)) return;
+  if (selected === answer && !matched.has(selected)) {
+    matched.add(answer);
+    selectedWord = null;
+    const item = vocabulary.find(v => v.word === answer);
+    const box = [...document.querySelectorAll(".definition")].find(el => el.dataset.answer === answer);
+    box.classList.add("correct");
+    box.querySelector(".drop-label").textContent = "✓ " + answer;
+    const card = [...document.querySelectorAll(".term")].find(el => el.dataset.word === answer);
+    card.classList.remove("selected");
+    card.classList.add("matched");
+    card.draggable = false;
+    card.setAttribute("aria-disabled", "true");
+    feedback.className = "feedback good";
+    feedback.textContent = "✓ Correct! " + item.explanation;
+    updateScore();
+    if (matched.size === vocabulary.length) feedback.textContent += " All four matches are complete. Review the explanation above.";
+  } else {
+    feedback.className = "feedback bad";
+    feedback.textContent = "Not quite! Try again. Think about what the word means.";
+  }
+}
+function updateScore() {
+  const count = matched.size;
+  const percent = (count / vocabulary.length) * 100;
+  document.getElementById("score").textContent = "Score: " + count + " / " + vocabulary.length;
+  document.getElementById("progressText").textContent = percent + "% Complete";
+  document.getElementById("progress").style.width = percent + "%";
+}
+function resetGame() { buildGame(); }
+buildGame();
+</script>
+</body>
+</html>
