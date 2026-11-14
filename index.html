@@ -108,7 +108,7 @@ function buildGame() {
   });
   updateScore();
   feedback.className = "feedback";
-  feedback.textContent = "Select a vocabulary word and match it with a definition!";
+  feedback.textContent = "Select a game element and match it with a definition!";
 }
 function selectWord(word) {
   if (matched.has(word)) return;
@@ -134,7 +134,7 @@ function checkAnswer(selected, answer) {
     feedback.className = "feedback good";
     feedback.textContent = "✓ Correct! " + item.explanation;
     updateScore();
-    if (matched.size === vocabulary.length) feedback.textContent += " All four matches are complete. Review the explanation above.";
+    if (matched.size === vocabulary.length) feedback.textContent += " All four matches are complete.";
   } else {
     feedback.className = "feedback bad";
     feedback.textContent = "Not quite! Try again. Think about what the word means.";
